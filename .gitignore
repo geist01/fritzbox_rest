@@ -1,0 +1,5 @@
+/config/defaults.ini
+/target
+**/*.rs.bk
+/log/
+/log-camel-lsp.out
