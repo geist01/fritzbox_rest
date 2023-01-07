@@ -1,19 +1,25 @@
-use error_chain::*;
+use thiserror::Error;
 
-error_chain!{
-    foreign_links {
-        Network(std::io::Error);
-        Reqwest(reqwest::Error);
-        SerdeXml(serde_xml_rs::Error);
-        SerdeJson(serde_json::Error);
-        ParseUrl(reqwest::UrlError);
-        ParseResponse(std::num::ParseIntError);
-    }
+#[derive(Error, Debug)]
+pub enum FritzboxError {
+    #[error("IO")]
+    Network(#[from] std::io::Error),
 
-    errors {
-        MissingParameter(t: String) {
-            description("Missing parameter")
-            display("Missing parameter: '{}'", t)
-        }
-    }
+    #[error("IO")]
+    Reqwest(#[from] reqwest::Error),
+
+    #[error("IO")]
+    SerdeXml(#[from] serde_xml_rs::Error),
+
+    #[error("IO")]
+    SerdeJson(#[from] serde_json::Error),
+
+    #[error("IO")]
+    ParseUrl(#[from] reqwest::UrlError),
+
+    #[error("IO")]
+    ParseResponse(#[from] std::num::ParseIntError),
+
+    #[error("IO")]
+    MissingParameter(String),
 }
