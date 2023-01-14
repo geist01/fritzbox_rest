@@ -1,3 +1,4 @@
+
 use crate::konstanten::*;
 use anyhow::Result;
 
@@ -16,14 +17,18 @@ pub fn get_client() -> Client {
     Client::new()
 }
 
-pub fn fetch_sid(config: &Config, client: &Client) -> Result<String> {
+pub fn fetch_sid(protocol : &String, host:&Option<String>, user : &Option<String>, psw : &Option<String>, sid : &Option<String>, client: &Client) -> Result<String> {
     use byteorder::{LittleEndian, WriteBytesExt};
 
-    if config.sid.is_some() {
-        return Ok(config.sid.clone().unwrap());
+    if sid.is_some() {
+        return Ok(sid.clone().unwrap());
     }
 
-    let url = format!("{0}://{1}/login_sid.lua", config.protocol, config.host);
+    let url = format!(
+        "{0}://{1}/login_sid.lua",
+        protocol,
+        host.as_ref().unwrap()
+    );
 
     let challenge_request = client.get(&url).send()?.text()?;
     debug!("body-challenge request = {:?}", challenge_request);
@@ -31,9 +36,13 @@ pub fn fetch_sid(config: &Config, client: &Client) -> Result<String> {
     let session_info: SessionInfo = serde_xml_rs::deserialize(challenge_request.as_bytes())?;
     debug!("challenge = {:#?}", session_info);
 
-    let v: Vec<u16> = format!("{0}-{1}", session_info.challenge, &config.psw)
-        .encode_utf16()
-        .collect();
+    let v: Vec<u16> = format!(
+        "{0}-{1}",
+        session_info.challenge,
+        psw.as_ref().unwrap()
+    )
+    .encode_utf16()
+    .collect();
 
     let mut wtr = vec![];
     for x in v.iter() {
@@ -42,7 +51,7 @@ pub fn fetch_sid(config: &Config, client: &Client) -> Result<String> {
 
     let digest = md5::compute(wtr);
 
-    if let Ok(url) = match &config.usr {
+    if let Ok(url) = match user {
         None => Url::parse_with_params(
             &url,
             &[(
@@ -70,13 +79,16 @@ pub fn fetch_sid(config: &Config, client: &Client) -> Result<String> {
         return Ok(session_info.sid);
     }
 
-    //Err(())
     Ok("ddd".to_string())
 }
 
-pub fn logout_sid(client: &Client, config: &Config, sid: &str) -> Result<()> {
+pub fn logout_sid(client: &Client, protocol : &String, host : &Option<String>, sid: &str) -> Result<()> {
     let url = Url::parse_with_params(
-        &format!("{0}://{1}/login_sid.lua", config.protocol, config.host),
+        &format!(
+            "{0}://{1}/login_sid.lua",
+            protocol,
+            host.as_ref().unwrap()
+        ),
         &[("sid", sid), ("logout", "1")],
     )?;
 
@@ -86,11 +98,12 @@ pub fn logout_sid(client: &Client, config: &Config, sid: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn list_devices(client: &Client, config: &Config, sid: &str) -> Result<DeviceListInfos> {
+pub fn list_devices(client: &Client, protocol : &String, host : &Option<String>,  sid: &str) -> Result<DeviceListInfos> {
     let url = Url::parse_with_params(
         &format!(
             "{0}://{1}/webservices/homeautoswitch.lua",
-            config.protocol, config.host
+            protocol,
+            host.as_ref().unwrap()
         ),
         &[("sid", sid), ("switchcmd", "getdevicelistinfos")],
     )?;
@@ -108,15 +121,16 @@ pub fn list_devices(client: &Client, config: &Config, sid: &str) -> Result<Devic
     Ok(devices_list)
 }
 
-pub fn read_switchstate(client: &Client, config: &Config, sid: &str) -> Result<bool> {
+pub fn read_switchstate(client: &Client, protocol : &String, host : &Option<String>, sid: &str, ain : &str) -> Result<bool> {
     let url = Url::parse_with_params(
         &format!(
             "{0}://{1}/webservices/homeautoswitch.lua",
-            config.protocol, config.host
+            protocol,
+            host.as_ref().unwrap()
         ),
         &[
             ("sid", sid),
-            ("ain", &config.ain.clone().unwrap()),
+            ("ain", ain),
             ("switchcmd", "getswitchstate"),
         ],
     )?;
@@ -132,15 +146,16 @@ pub fn read_switchstate(client: &Client, config: &Config, sid: &str) -> Result<b
     Ok(false)
 }
 
-pub fn read_temperature(client: &Client, config: &Config, sid: &str) -> Result<usize> {
+pub fn read_temperature(client: &Client, protocol : &String, host : &Option<String>, sid: &str, ain : &str) -> Result<usize> {
     let url = Url::parse_with_params(
         &format!(
             "{0}://{1}/webservices/homeautoswitch.lua",
-            config.protocol, config.host
+            protocol,
+            host.as_ref().unwrap()
         ),
         &[
             ("sid", sid),
-            ("ain", &config.ain.clone().unwrap()),
+            ("ain", ain),
             ("switchcmd", "gettemperature"),
         ],
     )?;
@@ -155,15 +170,16 @@ pub fn read_temperature(client: &Client, config: &Config, sid: &str) -> Result<u
     Ok(0)
 }
 
-pub fn read_consumption(client: &Client, config: &Config, sid: &str) -> Result<f64> {
+pub fn read_consumption(client: &Client, protocol : &String, host : &Option<String>, sid: &str, ain : &str) -> Result<f64> {
     let url = Url::parse_with_params(
         &format!(
             "{0}://{1}/webservices/homeautoswitch.lua",
-            config.protocol, config.host
+            protocol,
+            host.as_ref().unwrap()
         ),
         &[
             ("sid", sid),
-            ("ain", &config.ain.clone().unwrap()),
+            ("ain", ain),
             ("switchcmd", "getswitchpower"),
         ],
     )?;
@@ -178,17 +194,18 @@ pub fn read_consumption(client: &Client, config: &Config, sid: &str) -> Result<f
     Ok(0.0)
 }
 
-pub fn set_switch_on_off(client: &Client, config: &Config, sid: &str, on: bool) -> Result<()> {
+pub fn set_switch_on_off(client: &Client, protocol : &String, host : &Option<String>, sid: &str, ain : &str, on: bool) -> Result<()> {
     let command = if on { "setswitchon" } else { "setswitchoff" };
 
     let url = Url::parse_with_params(
         &format!(
             "{0}://{1}/webservices/homeautoswitch.lua",
-            config.protocol, config.host
+            protocol,
+            host.as_ref().unwrap()
         ),
         &[
             ("sid", sid),
-            ("ain", &config.ain.clone().unwrap()),
+            ("ain", ain),
             ("switchcmd", command),
         ],
     )?;
@@ -199,16 +216,3 @@ pub fn set_switch_on_off(client: &Client, config: &Config, sid: &str, on: bool) 
     Ok(())
 }
 
-// pub fn fetch_sunset(config : &Config, client : &Client) -> Result<SunsetRise> {
-//     let url = Url::parse_with_params(
-//         "https://api.sunrise-sunset.org/json",
-//         &[("lat", config.lat.clone().unwrap()),
-//           ("lng", config.lng.clone().unwrap()),
-//           ("formatted", "0".to_string())])?;
-
-//     let res = client.get(url).send()?.text()?;
-//     let sunsetrise: SunsetRise = serde_json::from_str(&res)?;
-//     debug!("sunsetrise = {:#?}", sunsetrise);
-
-//     Ok(sunsetrise)
-// }

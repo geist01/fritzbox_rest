@@ -39,7 +39,7 @@ pub fn init_timer(config: &Config) -> Result<()> {
                             debug!(target: "fritz", "Handler gestartet");
                             let mut aktiv = if let Ok(()) = mobileping::ping_mobile(
                                 config_clone2.host_mobile.as_ref().unwrap(),
-                                config_clone2.port_mobile.as_ref().unwrap(),
+                                config_clone2.port_mobile.unwrap(),
                             ) {
                                 debug!(target: "fritz", "Initialer Online Status: on");
                                 true
@@ -51,7 +51,7 @@ pub fn init_timer(config: &Config) -> Result<()> {
                             loop {
                                 if let Ok(()) = mobileping::ping_mobile(
                                     config_clone2.host_mobile.as_ref().unwrap(),
-                                    config_clone2.port_mobile.as_ref().unwrap(),
+                                    config_clone2.port_mobile.unwrap(),
                                 ) {
                                     if !aktiv {
                                         debug!(target: "fritz", "online");
