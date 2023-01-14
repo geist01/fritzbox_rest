@@ -33,7 +33,7 @@ pub fn fetch_sid(protocol : &String, host:&Option<String>, user : &Option<String
     let challenge_request = client.get(&url).send()?.text()?;
     debug!("body-challenge request = {:?}", challenge_request);
 
-    let session_info: SessionInfo = serde_xml_rs::deserialize(challenge_request.as_bytes())?;
+    let session_info: SessionInfo = serde_xml_rs::de::from_str(&challenge_request)?;
     debug!("challenge = {:#?}", session_info);
 
     let v: Vec<u16> = format!(
@@ -73,7 +73,7 @@ pub fn fetch_sid(protocol : &String, host:&Option<String>, user : &Option<String
         let sid_request = client.get(url).send()?.text()?;
         debug!("body-sid request = {:?}", challenge_request);
 
-        let session_info: SessionInfo = serde_xml_rs::deserialize(sid_request.as_bytes()).unwrap();
+        let session_info: SessionInfo = serde_xml_rs::de::from_str(&sid_request).unwrap();
         debug!("sid = {}", session_info.sid);
 
         return Ok(session_info.sid);
@@ -111,7 +111,7 @@ pub fn list_devices(client: &Client, protocol : &String, host : &Option<String>,
     let res = client.get(url).send()?.text()?;
     debug!("body-devicelist result = {:?}", res);
 
-    let devices_list: DeviceListInfos = serde_xml_rs::deserialize(res.as_bytes())?;
+    let devices_list: DeviceListInfos = serde_xml_rs::de::from_str(&res)?;
     debug!("devices = {:#?}", devices_list);
 
     for x in &devices_list.device {
