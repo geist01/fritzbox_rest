@@ -8,7 +8,7 @@ pub mod mobileping;
 pub mod sunsetrise;
 pub mod timertasks;
 
-use reqwest::Client;
+use reqwest::blocking::Client;
 use reqwest::Url;
 
 use log::*;

@@ -15,9 +15,6 @@ pub enum FritzboxError {
     SerdeJson(#[from] serde_json::Error),
 
     #[error("IO")]
-    ParseUrl(#[from] reqwest::UrlError),
-
-    #[error("IO")]
     ParseResponse(#[from] std::num::ParseIntError),
 
     #[error("IO")]
