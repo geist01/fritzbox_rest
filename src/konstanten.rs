@@ -1,35 +1,78 @@
 use chrono::prelude::*;
 use serde_derive::*;
 
-#[derive(PartialEq, Clone)]
+pub use clap::{Parser, Subcommand};
+
+#[derive(PartialEq, Clone, Subcommand, Debug)]
 pub enum Commands {
     Test,
     Timer,
     Sid,
-    List,
-    SwitchOn,
-    SwitchOff,
-    GetPower,
-    GetTemperature,
-    GetState,
+    List {
+        #[arg(long)]
+        sid: Option<String>,
+    },
+    SwitchOn {
+        #[arg(long)]
+        sid: Option<String>,
+        #[arg(long)]
+        ain: String,
+    },
+    SwitchOff {
+        #[arg(long)]
+        sid: Option<String>,
+        #[arg(long)]
+        ain: String,
+    },
+    Power {
+        #[arg(long)]
+        sid: Option<String>,
+        #[arg(long)]
+        ain: String,
+    },
+    Temperature {
+        #[arg(long)]
+        sid: Option<String>,
+        #[arg(long)]
+        ain: String,
+    },
+    Switchstate {
+        #[arg(long)]
+        sid: Option<String>,
+        #[arg(long)]
+        ain: String,
+    },
 }
 
-#[derive(Clone)]
+#[derive(Clone, Parser, Debug)]
+#[command(author, version, about, long_about = None)]
 pub struct Config {
+    #[arg(long, default_value = "http")]
     pub protocol: String,
-    pub host: String,
+    #[arg(long)]
+    pub host: Option<String>,
+
+    #[arg(long)]
     pub usr: Option<String>,
-    pub psw: String,
+    #[arg(long)]
+    pub psw: Option<String>,
+
+    #[arg(long)]
     pub sid: Option<String>,
+    #[arg(long)]
     pub ain: Option<String>,
 
+    #[arg(long)]
     pub lng: Option<f64>,
+    #[arg(long)]
     pub lat: Option<f64>,
 
+    #[arg(long)]
     pub host_mobile: Option<String>,
-    pub port_mobile: Option<String>,
+    #[arg(long)]
+    pub port_mobile: Option<u16>,
 
-    // Commands
+    #[command(subcommand)]
     pub command: Commands,
 }
 

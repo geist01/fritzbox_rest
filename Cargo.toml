@@ -13,7 +13,7 @@ serde-xml-rs = "0.2.1"
 serde_derive = "1.0.80"
 serde_json = "1.0"
 
-log = "0.3.8"
+log = "0.4"
 log4rs = "1"
 
 timer = "0.2.0"
@@ -21,9 +21,9 @@ sunrise = "1.0.0"
 chrono = "*"
 rust-ini = "0.18"
 
-md5 = "0.6.0"
+md5 = "0.7.0"
 byteorder = "1"
 
-clap = "2"
+clap = { version = "4.0.29", features = ["derive"] }
 thiserror = "1.0"
 anyhow = "1.0"
