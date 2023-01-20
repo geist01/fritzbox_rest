@@ -24,6 +24,6 @@ rust-ini = "0.18"
 md5 = "0.7.0"
 byteorder = "1"
 
-clap = { version = "4", features = ["derive"] }
+clap = { version = "4.1", features = ["derive"] }
 thiserror = "1.0"
 anyhow = "1.0"
