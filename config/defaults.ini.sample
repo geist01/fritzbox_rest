@@ -1,0 +1,12 @@
+[geo]
+lng = 13.408333
+lat = 52.518611
+
+[device]
+host_mobile = 192.168.99.22
+port_mobile = 5060
+
+[server]
+host = *fb-hostname or ip*
+user = *fb-user*
+psw = *fb-password*
